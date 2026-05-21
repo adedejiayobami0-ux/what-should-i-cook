@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Camera, Upload, Sparkles, Loader2, X, RotateCcw, ArrowLeft, Type, Plus, Check } from "lucide-react";
+import { Camera, Upload, Sparkles, Loader2, X, RotateCcw, ArrowLeft, Type, Plus, Check, Info } from "lucide-react";
 
 export default function App() {
   const [stage, setStage] = useState("entry");
@@ -13,6 +13,7 @@ export default function App() {
   const [recipe, setRecipe] = useState(null);
   const [error, setError] = useState(null);
   const [streamActive, setStreamActive] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -20,29 +21,29 @@ export default function App() {
   const streamRef = useRef(null);
 
   const cuisines = [
-    { id: "west-african", name: "West African", note: "Nigerian, Ghanaian, Senegalese", emoji: "🌶️" },
-    { id: "italian", name: "Italian", note: "Pasta, risotto, sauces", emoji: "🍝" },
-    { id: "japanese", name: "Japanese", note: "Clean, balanced, umami", emoji: "🍣" },
-    { id: "mexican", name: "Mexican", note: "Salsa, masa, bright herbs", emoji: "🌮" },
-    { id: "indian", name: "Indian", note: "Spice-layered, aromatic", emoji: "🍛" },
-    { id: "middle-eastern", name: "Middle Eastern", note: "Tahini, sumac, herbs", emoji: "🧆" },
-    { id: "thai", name: "Thai", note: "Sweet, sour, salty, spicy", emoji: "🌿" },
-    { id: "korean", name: "Korean", note: "Gochujang, ferments, banchan", emoji: "🥢" },
-    { id: "french", name: "French", note: "Technique, butter, sauces", emoji: "🥖" },
-    { id: "american", name: "American Comfort", note: "Diner, BBQ, soul food", emoji: "🍔" },
-    { id: "mediterranean", name: "Mediterranean", note: "Olive oil, lemon, vegetables", emoji: "🫒" },
-    { id: "chinese", name: "Chinese", note: "Stir-fry, braise, dumpling", emoji: "🥟" },
-    { id: "caribbean", name: "Caribbean", note: "Jerk, allspice, rice & peas", emoji: "🌴" },
-    { id: "surprise", name: "Surprise Me", note: "Chef picks the cuisine", emoji: "🎲" },
+    { id: "west-african", name: "West African", note: "Nigerian, Ghanaian", emoji: "🌶️" },
+    { id: "italian", name: "Italian", note: "Pasta, risotto", emoji: "🍝" },
+    { id: "japanese", name: "Japanese", note: "Clean, umami", emoji: "🍣" },
+    { id: "mexican", name: "Mexican", note: "Salsa, masa", emoji: "🌮" },
+    { id: "indian", name: "Indian", note: "Spice-layered", emoji: "🍛" },
+    { id: "middle-eastern", name: "Middle Eastern", note: "Tahini, sumac", emoji: "🧆" },
+    { id: "thai", name: "Thai", note: "Sweet, sour, spicy", emoji: "🌿" },
+    { id: "korean", name: "Korean", note: "Gochujang, ferments", emoji: "🥢" },
+    { id: "french", name: "French", note: "Technique, butter", emoji: "🥖" },
+    { id: "american", name: "American Comfort", note: "Diner, BBQ, soul", emoji: "🍔" },
+    { id: "mediterranean", name: "Mediterranean", note: "Olive oil, lemon", emoji: "🫒" },
+    { id: "chinese", name: "Chinese", note: "Stir-fry, braise", emoji: "🥟" },
+    { id: "caribbean", name: "Caribbean", note: "Jerk, allspice", emoji: "🌴" },
+    { id: "surprise", name: "Surprise Me", note: "Chef picks", emoji: "🎲" },
   ];
 
   const skills = [
-    { id: "quick", name: "Quick & Easy", tagline: "Under 25 min, weeknight", accent: "#2c6e5b" },
-    { id: "healthy", name: "Healthy", tagline: "Balanced, fresh, lighter", accent: "#557a3a" },
-    { id: "budget", name: "Budget", tagline: "Stretch what you have", accent: "#a87432" },
-    { id: "datenight", name: "Date Night", tagline: "Plated, romantic, impressive", accent: "#9b2c4a" },
-    { id: "advanced", name: "Advanced", tagline: "Real technique for cooks", accent: "#5b3a7c" },
-    { id: "surprise", name: "Surprise Me", tagline: "Chef picks the vibe", accent: "#c84d2c" },
+    { id: "quick", name: "Quick & Easy", tagline: "Under 25 min, weeknight" },
+    { id: "healthy", name: "Healthy", tagline: "Balanced, fresh, lighter" },
+    { id: "budget", name: "Budget", tagline: "Stretch what you have" },
+    { id: "datenight", name: "Date Night", tagline: "Plated, romantic, impressive" },
+    { id: "advanced", name: "Advanced", tagline: "Real technique for cooks" },
+    { id: "surprise", name: "Surprise Me", tagline: "Chef picks the vibe" },
   ];
 
   const dietOptions = [
@@ -148,7 +149,7 @@ export default function App() {
       if (!Array.isArray(data.ingredients) || data.ingredients.length === 0) throw new Error("No ingredients");
       setIngredients(data.ingredients); setStage("cuisine");
     } catch (err) {
-      setError("Couldn't read the ingredients. Try a clearer photo or type them in.");
+      setError("Couldn't read the photo. Try better light or just type the ingredients.");
       setStage("preview");
     }
   }
@@ -192,29 +193,26 @@ export default function App() {
   const cuisineLabel = cuisines.find((c) => c.id === cuisine)?.name;
   const skillObj = skills.find((s) => s.id === skill);
   const skillLabel = skillObj?.name;
-  const skillAccent = skillObj?.accent || "#c84d2c";
 
   return (
     <>
       <GlobalStyles />
       <div className="page">
-        <div className="grain" />
         <div className="container">
-          <Header />
+          <Header onAboutClick={() => setShowAbout(true)} />
 
           {error && <ErrorBanner text={error} onDismiss={() => setError(null)} />}
 
           {stage === "entry" && (
             <FadeIn>
               <div className="masthead">
-                <div className="masthead-line">TONIGHT'S QUESTION</div>
-                <h2 className="masthead-q">What do you have?</h2>
-                <p className="masthead-sub">Snap a photo, or just type it out. We'll take it from there.</p>
+                <div className="masthead-q">What do you have?</div>
+                <div className="masthead-sub">SNAP IT. UPLOAD IT. TYPE IT.</div>
               </div>
               <div className="entry-grid">
-                <EntryCard onClick={() => setStage("capture")} icon={<Camera size={26} strokeWidth={1.5} />} title="Photograph" sub="Let me see what you have" />
-                <EntryCard onClick={() => fileInputRef.current?.click()} icon={<Upload size={26} strokeWidth={1.5} />} title="Upload" sub="From your photo library" />
-                <EntryCard onClick={() => setStage("typing")} icon={<Type size={26} strokeWidth={1.5} />} title="Type it" sub="List what's on the counter" wide />
+                <EntryCard onClick={() => setStage("capture")} icon={<Camera size={28} strokeWidth={2.2} />} title="Photograph" sub="Show me the fridge" num="01" />
+                <EntryCard onClick={() => fileInputRef.current?.click()} icon={<Upload size={28} strokeWidth={2.2} />} title="Upload" sub="From your library" num="02" />
+                <EntryCard onClick={() => setStage("typing")} icon={<Type size={28} strokeWidth={2.2} />} title="Type it" sub="Just list it out" num="03" wide />
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
             </FadeIn>
@@ -223,8 +221,8 @@ export default function App() {
           {stage === "typing" && (
             <FadeIn>
               <BackBar onBack={() => { setTypedText(""); setStage("entry"); }} />
-              <h2 className="step-title">What's in the kitchen?</h2>
-              <p className="step-sub">Separate with commas. Vague is fine — "leftover chicken," "half a lemon."</p>
+              <Heading>What's in the kitchen?</Heading>
+              <p className="lede">Commas. Vague is fine. "Half a lemon" counts.</p>
               <textarea
                 className="ingredient-input"
                 placeholder="onion, garlic, leftover chicken, half a lemon, scotch bonnet…"
@@ -233,18 +231,18 @@ export default function App() {
                 rows={5}
                 autoFocus
               />
-              <div className="quick-label">QUICK ADD</div>
+              <div className="micro-label">QUICK ADD</div>
               <div className="quick-chips">
                 {commonIngredients.map((item) => {
                   const added = typedText.toLowerCase().includes(item.toLowerCase());
                   return (
                     <button key={item} onClick={() => addQuickIngredient(item)} className={`quick-chip ${added ? "is-added" : ""}`}>
-                      {added ? <Check size={12} /> : <Plus size={12} />} {item}
+                      {added ? <Check size={12} strokeWidth={2.5} /> : <Plus size={12} strokeWidth={2.5} />} {item}
                     </button>
                   );
                 })}
               </div>
-              <PrimaryBtn onClick={submitTyped} icon={<Sparkles size={16} />}>Use these ingredients</PrimaryBtn>
+              <PrimaryBtn onClick={submitTyped}>Take it from here →</PrimaryBtn>
             </FadeIn>
           )}
 
@@ -254,15 +252,15 @@ export default function App() {
               {streamActive ? (
                 <div className="cam-frame">
                   <video ref={videoRef} playsInline muted />
-                  <button onClick={stopCamera} className="cam-close" aria-label="Close camera"><X size={20} /></button>
+                  <button onClick={stopCamera} className="cam-close" aria-label="Close"><X size={20} /></button>
                   <div className="cam-shutter-wrap"><button onClick={captureFromVideo} className="cam-shutter" aria-label="Capture" /></div>
                 </div>
               ) : (
                 <div className="cam-prompt">
-                  <Camera size={40} strokeWidth={1.3} style={{ opacity: 0.5, marginBottom: "0.75rem" }} />
-                  <p className="cam-prompt-line">Open the fridge.</p>
-                  <p className="cam-prompt-line"><em>Show me everything.</em></p>
-                  <PrimaryBtn onClick={startCamera} icon={<Camera size={16} />}>Start the camera</PrimaryBtn>
+                  <Camera size={48} strokeWidth={2} style={{ marginBottom: "1rem" }} />
+                  <div className="cam-prompt-line">OPEN THE FRIDGE.</div>
+                  <div className="cam-prompt-line cam-prompt-line-em">Show me everything.</div>
+                  <PrimaryBtn onClick={startCamera}>Start the camera →</PrimaryBtn>
                 </div>
               )}
             </FadeIn>
@@ -271,39 +269,42 @@ export default function App() {
           {stage === "preview" && imageData && (
             <FadeIn>
               <BackBar onBack={reset} />
-              <div className="photo-frame"><img src={imageData} alt="Your ingredients" /></div>
-              <PrimaryBtn onClick={detectIngredients} icon={<Sparkles size={16} />}>Read these ingredients</PrimaryBtn>
-              <GhostBtn onClick={reset} icon={<RotateCcw size={14} />}>Try another way</GhostBtn>
+              <div className="photo-frame">
+                <img src={imageData} alt="Your ingredients" />
+              </div>
+              <PrimaryBtn onClick={detectIngredients}>Read these ingredients →</PrimaryBtn>
+              <GhostBtn onClick={reset} icon={<RotateCcw size={14} strokeWidth={2.5} />}>Try another way</GhostBtn>
             </FadeIn>
           )}
 
-          {stage === "detecting" && <Loading label="Reading the photo…" subline="Looking at every shelf and corner." />}
+          {stage === "detecting" && <Loading label="READING THE PHOTO" subline="Looking at every shelf." />}
 
           {stage === "cuisine" && (
             <FadeIn>
               <IngredientShelf items={ingredients} />
-              <StepHeader step={1} total={3} title="Where in the world?" subtitle="The cuisine sets the soul of the dish." />
+              <StepHeader step={1} total={3} title="Where in the world?" />
               <div className="cuisine-grid">
                 {cuisines.map((c, i) => (
-                  <button key={c.id} onClick={() => { setCuisine(c.id); setStage("skill"); }} className="cuisine-card" style={{ animationDelay: `${i * 30}ms` }}>
+                  <button key={c.id} onClick={() => { setCuisine(c.id); setStage("skill"); }} className="cuisine-card" style={{ animationDelay: `${i * 25}ms` }}>
                     <div className="cuisine-emoji">{c.emoji}</div>
                     <div className="cuisine-name">{c.name}</div>
                     <div className="cuisine-note">{c.note}</div>
                   </button>
                 ))}
               </div>
-              <GhostBtn onClick={reset} icon={<RotateCcw size={14} />}>Start over</GhostBtn>
+              <GhostBtn onClick={reset} icon={<RotateCcw size={14} strokeWidth={2.5} />}>Start over</GhostBtn>
             </FadeIn>
           )}
 
           {stage === "skill" && (
             <FadeIn>
               <BackBar onBack={() => setStage("cuisine")} crumbs={[cuisineLabel]} />
-              <StepHeader step={2} total={3} title="How are we cooking?" subtitle="The vibe shapes the recipe." />
+              <StepHeader step={2} total={3} title="How are we cooking?" />
               <div className="skill-list">
                 {skills.map((s, i) => (
-                  <button key={s.id} onClick={() => { setSkill(s.id); setStage("diet"); }} className="skill-card" style={{ "--accent": s.accent, animationDelay: `${i * 40}ms` }}>
-                    <div>
+                  <button key={s.id} onClick={() => { setSkill(s.id); setStage("diet"); }} className="skill-card" style={{ animationDelay: `${i * 35}ms` }}>
+                    <div className="skill-num">{String(i + 1).padStart(2, "0")}</div>
+                    <div className="skill-body">
                       <div className="skill-name">{s.name}</div>
                       <div className="skill-tag">{s.tagline}</div>
                     </div>
@@ -317,124 +318,190 @@ export default function App() {
           {stage === "diet" && (
             <FadeIn>
               <BackBar onBack={() => setStage("skill")} crumbs={[cuisineLabel, skillLabel]} />
-              <StepHeader step={3} total={3} title="Any dietary needs?" subtitle="Tap any that apply, or skip." />
+              <StepHeader step={3} total={3} title="Any dietary needs?" subtitle="Tap any. Or skip." />
               <div className="diet-chips">
                 {dietOptions.map((d, i) => {
                   const active = diets.includes(d.id);
                   return (
-                    <button key={d.id} onClick={() => toggleDiet(d.id)} className={`diet-chip ${active ? "is-active" : ""}`} style={{ animationDelay: `${i * 30}ms` }}>
-                      {active && <Check size={13} />} {d.name}
+                    <button key={d.id} onClick={() => toggleDiet(d.id)} className={`diet-chip ${active ? "is-active" : ""}`} style={{ animationDelay: `${i * 25}ms` }}>
+                      {active && <Check size={13} strokeWidth={3} />} {d.name}
                     </button>
                   );
                 })}
               </div>
-              <PrimaryBtn onClick={fetchRecipeOptions} icon={<Sparkles size={16} />}>Show me three dishes</PrimaryBtn>
-              {diets.length === 0 && <p className="diet-skip">No dietary needs? Just hit the button above.</p>}
+              <PrimaryBtn onClick={fetchRecipeOptions}>Show me three dishes →</PrimaryBtn>
             </FadeIn>
           )}
 
-          {stage === "naming" && <Loading label="Brainstorming dishes…" subline="Three I'd want to cook from this." />}
+          {stage === "naming" && <Loading label="BRAINSTORMING DISHES" subline="Three I'd want to cook from this." />}
 
           {stage === "choose" && (
             <FadeIn>
               <BackBar onBack={() => setStage("diet")} crumbs={[cuisineLabel, skillLabel, ...diets.map((d) => dietOptions.find((o) => o.id === d)?.name).filter(Boolean)]} />
-              <div className="result-pretitle">THREE DISHES</div>
-              <h2 className="result-title">I'd cook from this</h2>
+              <div className="big-eyebrow">THREE DISHES</div>
+              <Heading>For you to choose.</Heading>
+
               <div className="dish-list">
                 {recipeOptions.map((opt, i) => (
-                  <button key={i} onClick={() => pickRecipe(opt)} className="dish-card" style={{ "--accent": skillAccent, animationDelay: `${i * 80}ms` }}>
-                    <div className="dish-num">№ {String(i + 1).padStart(2, "0")}</div>
+                  <button key={i} onClick={() => pickRecipe(opt)} className="dish-card" style={{ animationDelay: `${i * 70}ms` }}>
+                    <div className="dish-num-stamp">№{String(i + 1).padStart(2, "0")}</div>
                     <h3 className="dish-name">{opt.name}</h3>
                     <p className="dish-tag">{opt.tagline}</p>
                     <div className="dish-meta">
                       <span>{opt.time}</span>
-                      <span className="dot">•</span>
+                      <span className="dot">●</span>
                       <span>{opt.difficulty}</span>
                     </div>
+                    <div className="dish-pick">PICK THIS ONE →</div>
                   </button>
                 ))}
               </div>
-              <GhostBtn onClick={fetchRecipeOptions} icon={<RotateCcw size={14} />}>Three more</GhostBtn>
+
+              <GhostBtn onClick={fetchRecipeOptions} icon={<RotateCcw size={14} strokeWidth={2.5} />}>Three more</GhostBtn>
             </FadeIn>
           )}
 
-          {stage === "cooking" && <Loading label="Composing your dish…" subline="Quantities, timings, the chef's note." />}
+          {stage === "cooking" && <Loading label="COMPOSING YOUR DISH" subline="Quantities, timings, the chef's note." />}
 
           {stage === "result" && recipe && (
             <FadeIn>
               <BackBar onBack={() => setStage("choose")} crumbs={[cuisineLabel, skillLabel]} />
+
               <article className="recipe">
-                <div className="recipe-frame" style={{ "--accent": skillAccent }}>
-                  <div className="recipe-pretitle">A RECIPE</div>
+                <div className="recipe-frame">
+                  <div className="recipe-pretitle">A RECIPE FOR YOU</div>
                   <h2 className="recipe-title">{recipe.name}</h2>
                   <p className="recipe-tagline">{recipe.tagline}</p>
                   <div className="recipe-meta">
                     <Meta label="TIME" value={recipe.time} />
-                    <span className="meta-divider" />
                     <Meta label="LEVEL" value={recipe.difficulty} />
-                    {recipe.servings && (<><span className="meta-divider" /><Meta label="SERVES" value={recipe.servings} /></>)}
+                    {recipe.servings && <Meta label="SERVES" value={recipe.servings} />}
                   </div>
                 </div>
+
                 <Sect title="From your kitchen">
                   <div className="pills">{recipe.uses?.map((u, i) => <span key={i} className="pill pill-strong">{u}</span>)}</div>
                 </Sect>
+
                 {recipe.extras?.length > 0 && (
                   <Sect title="Pantry add-ins">
                     <div className="pills">{recipe.extras.map((e, i) => <span key={i} className="pill pill-muted">{e}</span>)}</div>
                   </Sect>
                 )}
+
                 <Sect title="Method">
                   <ol className="steps">
                     {recipe.steps?.map((s, i) => (
-                      <li key={i}><span className="step-n">{String(i + 1).padStart(2, "0")}</span><span>{s}</span></li>
+                      <li key={i}>
+                        <span className="step-n">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="step-body">{s}</span>
+                      </li>
                     ))}
                   </ol>
                 </Sect>
+
                 {recipe.chefNote && (
-                  <div className="chef-note" style={{ "--accent": skillAccent }}>
+                  <div className="chef-note">
                     <div className="chef-note-label">A NOTE FROM THE CHEF</div>
                     <p>{recipe.chefNote}</p>
                   </div>
                 )}
               </article>
-              <GhostBtn onClick={() => setStage("choose")}>Back to dish choices</GhostBtn>
-              <GhostBtn onClick={reset} icon={<RotateCcw size={14} />}>Start fresh</GhostBtn>
+
+              <GhostBtn onClick={() => setStage("choose")}>← Back to dish choices</GhostBtn>
+              <GhostBtn onClick={reset} icon={<RotateCcw size={14} strokeWidth={2.5} />}>Start fresh</GhostBtn>
             </FadeIn>
           )}
 
           <canvas ref={canvasRef} style={{ display: "none" }} />
-          <Footer />
+          <Footer onAboutClick={() => setShowAbout(true)} />
         </div>
       </div>
+
+      {showAbout && <AboutPanel onClose={() => setShowAbout(false)} />}
     </>
   );
 }
 
-function Header() {
+// ---------- subcomponents ----------
+
+function Header({ onAboutClick }) {
   return (
     <header className="header">
+      <div className="header-row">
+        <div className="header-est">EST. 2026</div>
+        <button onClick={onAboutClick} className="header-about">
+          <Info size={14} strokeWidth={2.5} /> About
+        </button>
+      </div>
       <div className="header-rule" />
-      <div className="header-eyebrow">VOL. I · A KITCHEN ORACLE</div>
-      <h1 className="header-title">What Should<br /><em>I Cook?</em></h1>
+      <h1 className="header-title">
+        WHAT<br />SHOULD<br /><span className="header-title-accent">I COOK?</span>
+      </h1>
       <div className="header-rule" />
+      <div className="header-sub">A KITCHEN ORACLE · NO. 1</div>
     </header>
   );
 }
 
-function Footer() {
+function Footer({ onAboutClick }) {
   return (
     <footer className="footer">
       <div className="footer-rule" />
-      <div className="footer-text">Made with hunger · {new Date().getFullYear()}</div>
+      <div className="footer-row">
+        <span>MADE WITH HUNGER</span>
+        <button onClick={onAboutClick} className="footer-link">How this works</button>
+      </div>
     </footer>
+  );
+}
+
+function AboutPanel({ onClose }) {
+  return (
+    <div className="about-overlay" onClick={onClose}>
+      <div className="about-panel" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="about-close" aria-label="Close"><X size={20} strokeWidth={2.5} /></button>
+        <div className="about-eyebrow">HOW THIS WORKS</div>
+        <h2 className="about-title">A chef in your pocket.<br />Not a search engine.</h2>
+
+        <div className="about-section">
+          <div className="about-section-num">01</div>
+          <div className="about-section-body">
+            <h3>The recipes are composed for you.</h3>
+            <p>An AI chef looks at the ingredients you actually have, the cuisine you pick, and the vibe you want — and invents a dish on the spot. Not pulled from a database. Made just now.</p>
+          </div>
+        </div>
+
+        <div className="about-section">
+          <div className="about-section-num">02</div>
+          <div className="about-section-body">
+            <h3>You'll never get the same recipe twice.</h3>
+            <p>That's the magic. Two people with the same fridge get two different dinners. Three more? Different again.</p>
+          </div>
+        </div>
+
+        <div className="about-section">
+          <div className="about-section-num">03</div>
+          <div className="about-section-body">
+            <h3>It's smart, but it hasn't tasted it.</h3>
+            <p>The chef has read a million cookbooks but never cooked in your kitchen. Most recipes are spot on. Some you'll want to season more aggressively or check timings against your stove. Trust your tongue.</p>
+          </div>
+        </div>
+
+        <div className="about-footer">
+          <div>Powered by Claude · Made with hunger</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function FadeIn({ children }) { return <div className="fadein">{children}</div>; }
 
-function EntryCard({ onClick, icon, title, sub, wide }) {
+function EntryCard({ onClick, icon, title, sub, num, wide }) {
   return (
     <button onClick={onClick} className={`entry-card ${wide ? "is-wide" : ""}`}>
+      <div className="entry-num">№{num}</div>
       <div className="entry-icon">{icon}</div>
       <div className="entry-title">{title}</div>
       <div className="entry-sub">{sub}</div>
@@ -445,7 +512,9 @@ function EntryCard({ onClick, icon, title, sub, wide }) {
 function BackBar({ onBack, crumbs = [] }) {
   return (
     <div className="backbar">
-      <button onClick={onBack} className="back-btn"><ArrowLeft size={14} /> Back</button>
+      <button onClick={onBack} className="back-btn">
+        <ArrowLeft size={14} strokeWidth={3} /> BACK
+      </button>
       {crumbs.length > 0 && <div className="crumbs">{crumbs.filter(Boolean).join(" · ")}</div>}
     </div>
   );
@@ -454,7 +523,7 @@ function BackBar({ onBack, crumbs = [] }) {
 function IngredientShelf({ items }) {
   return (
     <div className="shelf">
-      <div className="shelf-label">ON HAND</div>
+      <div className="shelf-label">ON HAND ({items.length})</div>
       <div className="pills">
         {items.map((ing, i) => (
           <span key={i} className="pill pill-strong" style={{ animationDelay: `${i * 25}ms` }}>{ing}</span>
@@ -467,25 +536,29 @@ function IngredientShelf({ items }) {
 function StepHeader({ step, total, title, subtitle }) {
   return (
     <div className="step-head">
-      <div className="step-eyebrow">STEP {step} OF {total}</div>
+      <div className="step-eyebrow">STEP {String(step).padStart(2, "0")} / {String(total).padStart(2, "0")}</div>
       <h2 className="step-title">{title}</h2>
-      <p className="step-sub">{subtitle}</p>
+      {subtitle && <p className="step-sub">{subtitle}</p>}
     </div>
   );
+}
+
+function Heading({ children }) {
+  return <h2 className="heading">{children}</h2>;
 }
 
 function Loading({ label, subline }) {
   return (
     <div className="loading">
-      <Loader2 size={32} strokeWidth={1.5} className="spin" />
+      <Loader2 size={36} strokeWidth={2.5} className="spin" />
       <div className="loading-label">{label}</div>
       <div className="loading-sub">{subline}</div>
     </div>
   );
 }
 
-function PrimaryBtn({ onClick, icon, children }) {
-  return <button onClick={onClick} className="btn-primary">{icon}<span>{children}</span></button>;
+function PrimaryBtn({ onClick, children }) {
+  return <button onClick={onClick} className="btn-primary">{children}</button>;
 }
 
 function GhostBtn({ onClick, icon, children }) {
@@ -495,7 +568,7 @@ function GhostBtn({ onClick, icon, children }) {
 function Sect({ title, children }) {
   return (
     <section className="sect">
-      <h3 className="sect-title">{title}</h3>
+      <h3 className="sect-title">{title.toUpperCase()}</h3>
       {children}
     </section>
   );
@@ -514,175 +587,888 @@ function ErrorBanner({ text, onDismiss }) {
   return (
     <div className="error-banner">
       <span>{text}</span>
-      <button onClick={onDismiss} aria-label="Dismiss"><X size={14} /></button>
+      <button onClick={onDismiss} aria-label="Dismiss"><X size={14} strokeWidth={3} /></button>
     </div>
   );
 }
 
+// ---------- styles ----------
+
 function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;700;900&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@500;700&display=swap');
+
       :root {
-        --cream: #f5efe2; --cream-deep: #efe6d2; --paper: #faf6ec;
-        --ink: #1f1a14; --ink-soft: #4a3f30; --ink-muted: #8a7d68;
-        --terracotta: #c84d2c; --terracotta-deep: #a13a1f;
-        --rule: rgba(31, 26, 20, 0.18); --rule-soft: rgba(31, 26, 20, 0.08);
+        --bg: #f3d250;
+        --bg-deep: #e8c134;
+        --paper: #fef7d8;
+        --ink: #181410;
+        --ink-soft: #2c2620;
+        --red: #d4391c;
+        --red-deep: #a82c14;
+        --rule: rgba(24, 20, 16, 0.95);
+        --rule-soft: rgba(24, 20, 16, 0.18);
       }
+
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      html, body, #root { margin: 0; padding: 0; min-height: 100%; background: var(--cream); }
+      html, body, #root { margin: 0; padding: 0; min-height: 100%; background: var(--bg); }
       body { -webkit-font-smoothing: antialiased; }
+
       .page {
-        min-height: 100vh; background: var(--cream); color: var(--ink);
-        font-family: 'Source Serif 4', Georgia, serif;
-        font-size: 17px; line-height: 1.55;
-        padding: 1.5rem 1.1rem 4rem;
-        position: relative; overflow-x: hidden;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        padding: 1rem 1rem 4rem;
+        position: relative;
+        background-image:
+          radial-gradient(circle at 8% 12%, rgba(212, 57, 28, 0.04) 0, transparent 30%),
+          radial-gradient(circle at 92% 78%, rgba(212, 57, 28, 0.04) 0, transparent 35%);
       }
-      .grain {
-        position: fixed; inset: 0; pointer-events: none;
-        opacity: 0.35; mix-blend-mode: multiply;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.10 0 0 0 0 0.08 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        z-index: 0;
+
+      .container {
+        max-width: 540px;
+        margin: 0 auto;
+        position: relative;
       }
-      .container { max-width: 520px; margin: 0 auto; position: relative; z-index: 1; }
 
-      .header { text-align: center; margin-bottom: 2.5rem; padding-top: 0.5rem; }
-      .header-rule { height: 1px; background: var(--ink); margin: 0.6rem auto; width: 60%; opacity: 0.7; }
-      .header-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.32em; color: var(--ink-muted); margin: 0.6rem 0; }
-      .header-title { font-family: 'Fraunces', Georgia, serif; font-variation-settings: "opsz" 144; font-size: clamp(3rem, 11vw, 4.4rem); font-weight: 400; letter-spacing: -0.035em; line-height: 0.95; margin: 0.4rem 0 0.6rem; color: var(--ink); }
-      .header-title em { font-style: italic; color: var(--terracotta); font-weight: 500; }
+      /* HEADER */
+      .header { margin-bottom: 2rem; }
+      .header-row {
+        display: flex; justify-content: space-between; align-items: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.15em;
+        margin-bottom: 0.5rem;
+      }
+      .header-est { color: var(--ink); }
+      .header-about {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: var(--ink); color: var(--bg);
+        border: none; padding: 5px 10px;
+        font-family: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit;
+        cursor: pointer;
+        text-transform: uppercase;
+      }
+      .header-about:hover { background: var(--red); }
+      .header-rule { height: 3px; background: var(--ink); margin: 8px 0; }
+      .header-title {
+        font-family: 'Archivo Black', 'Archivo', sans-serif;
+        font-size: clamp(3.2rem, 16vw, 4.8rem);
+        font-weight: 900;
+        line-height: 0.85;
+        letter-spacing: -0.045em;
+        margin: 0.5rem 0;
+        color: var(--ink);
+        text-transform: uppercase;
+      }
+      .header-title-accent { color: var(--red); }
+      .header-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        text-align: right;
+        margin-top: 4px;
+      }
 
-      .footer { margin-top: 4rem; text-align: center; }
-      .footer-rule { height: 1px; background: var(--rule); margin: 1.5rem auto; width: 40%; }
-      .footer-text { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em; color: var(--ink-muted); }
+      /* FOOTER */
+      .footer { margin-top: 4rem; }
+      .footer-rule { height: 2px; background: var(--ink); margin-bottom: 0.75rem; }
+      .footer-row {
+        display: flex; justify-content: space-between; align-items: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.15em;
+      }
+      .footer-link {
+        background: none; border: none;
+        font-family: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit;
+        color: var(--ink); cursor: pointer;
+        text-decoration: underline; text-decoration-thickness: 2px;
+        text-underline-offset: 4px;
+        text-transform: uppercase;
+      }
+      .footer-link:hover { color: var(--red); }
 
-      .masthead { text-align: center; margin-bottom: 1.5rem; }
-      .masthead-line { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.28em; color: var(--ink-muted); margin-bottom: 0.4rem; }
-      .masthead-q { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 96; font-size: 2rem; font-weight: 400; font-style: italic; margin: 0 0 0.4rem; letter-spacing: -0.01em; }
-      .masthead-sub { color: var(--ink-soft); margin: 0; font-size: 0.95rem; }
+      /* MASTHEAD (entry) */
+      .masthead { margin-bottom: 1.5rem; }
+      .masthead-q {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: clamp(2rem, 8vw, 2.7rem);
+        font-weight: 900;
+        line-height: 0.92;
+        letter-spacing: -0.025em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+      }
+      .masthead-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--red);
+      }
 
-      .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
-      .entry-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 1.5rem 1rem; text-align: center; cursor: pointer; font-family: inherit; color: var(--ink); transition: all 0.2s ease; box-shadow: 0 1px 0 rgba(31,26,20,0.04); }
-      .entry-card:hover { background: var(--cream-deep); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(31,26,20,0.06); }
+      .entry-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .entry-card {
+        position: relative;
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        padding: 1.4rem 1rem 1.1rem;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--ink);
+        transition: all 0.15s ease;
+        animation: cardIn 0.4s both;
+      }
+      .entry-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--ink);
+        background: #fff;
+      }
       .entry-card.is-wide { grid-column: span 2; }
-      .entry-icon { display: flex; justify-content: center; color: var(--terracotta); margin-bottom: 0.6rem; }
-      .entry-title { font-family: 'Fraunces', serif; font-size: 1.15rem; font-style: italic; font-weight: 500; margin-bottom: 0.15rem; }
-      .entry-sub { font-size: 0.82rem; color: var(--ink-muted); }
+      .entry-num {
+        position: absolute; top: 6px; right: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem; font-weight: 700;
+        background: var(--red); color: var(--paper);
+        padding: 2px 6px;
+        letter-spacing: 0.05em;
+      }
+      .entry-icon {
+        color: var(--red); margin-bottom: 0.7rem;
+        display: inline-flex;
+      }
+      .entry-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        line-height: 1;
+        margin-bottom: 0.3rem;
+      }
+      .entry-sub {
+        font-size: 0.83rem;
+        color: var(--ink-soft);
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+      }
 
-      .ingredient-input { width: 100%; background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem 1.1rem; font-family: 'Source Serif 4', serif; font-size: 1rem; line-height: 1.55; color: var(--ink); resize: vertical; min-height: 120px; margin-bottom: 1rem; }
-      .ingredient-input:focus { outline: none; border-color: var(--terracotta); background: #fff; }
-      .ingredient-input::placeholder { color: var(--ink-muted); font-style: italic; }
+      /* TYPING */
+      .ingredient-input {
+        width: 100%;
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        padding: 0.9rem 1rem;
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 1.05rem;
+        line-height: 1.5;
+        color: var(--ink);
+        resize: vertical;
+        min-height: 120px;
+        margin-bottom: 1.25rem;
+      }
+      .ingredient-input:focus {
+        outline: none;
+        box-shadow: 3px 3px 0 var(--red);
+        background: #fff;
+      }
+      .ingredient-input::placeholder { color: rgba(24, 20, 16, 0.4); font-style: italic; }
 
-      .quick-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.28em; color: var(--ink-muted); margin-bottom: 0.5rem; }
-      .quick-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1.25rem; }
-      .quick-chip { display: inline-flex; align-items: center; gap: 4px; background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 0.32rem 0.7rem; font-family: inherit; font-size: 0.83rem; color: var(--ink-soft); cursor: pointer; transition: all 0.18s; }
-      .quick-chip:hover { border-color: var(--ink); color: var(--ink); }
-      .quick-chip.is-added { background: var(--terracotta); border-color: var(--terracotta); color: var(--paper); }
+      .micro-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.22em;
+        color: var(--ink-soft);
+        margin-bottom: 0.5rem;
+      }
+      .quick-chips {
+        display: flex; flex-wrap: wrap; gap: 5px;
+        margin-bottom: 1.25rem;
+      }
+      .quick-chip {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: var(--paper);
+        border: 2px solid var(--ink);
+        border-radius: 0;
+        padding: 0.32rem 0.7rem;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+      .quick-chip:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 var(--ink);
+      }
+      .quick-chip.is-added {
+        background: var(--ink);
+        color: var(--bg);
+      }
 
-      .cam-frame { position: relative; }
-      .cam-frame video { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #000; border-radius: 4px; }
-      .cam-close { position: absolute; right: 12px; top: 12px; width: 38px; height: 38px; border-radius: 50%; background: rgba(31,26,20,0.7); color: var(--paper); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-      .cam-shutter-wrap { position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; }
-      .cam-shutter { width: 68px; height: 68px; border-radius: 50%; background: var(--paper); border: 4px solid rgba(31,26,20,0.5); cursor: pointer; }
-      .cam-shutter:active { transform: scale(0.95); }
-      .cam-prompt { background: var(--paper); border: 1px dashed var(--rule); border-radius: 4px; padding: 2.5rem 1.5rem; text-align: center; margin-bottom: 1.5rem; }
-      .cam-prompt-line { font-family: 'Fraunces', serif; font-size: 1.4rem; margin: 0; line-height: 1.3; }
-      .cam-prompt-line em { color: var(--terracotta); font-style: italic; }
+      /* CAMERA */
+      .cam-frame { position: relative; border: 3px solid var(--ink); }
+      .cam-frame video { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #000; display: block; }
+      .cam-close {
+        position: absolute; right: 12px; top: 12px;
+        width: 40px; height: 40px;
+        background: var(--ink); color: var(--paper);
+        border: 3px solid var(--paper); cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .cam-shutter-wrap {
+        position: absolute; bottom: 18px; left: 0; right: 0;
+        display: flex; justify-content: center;
+      }
+      .cam-shutter {
+        width: 70px; height: 70px;
+        background: var(--paper);
+        border: 4px solid var(--ink);
+        cursor: pointer;
+      }
+      .cam-shutter:active { transform: scale(0.93); }
+      .cam-prompt {
+        background: var(--paper);
+        border: 3px dashed var(--ink);
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        margin-bottom: 1.25rem;
+      }
+      .cam-prompt-line {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.5rem;
+        line-height: 1.1;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
+      .cam-prompt-line-em {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-weight: 400;
+        color: var(--red);
+        text-transform: none;
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+      }
 
-      .photo-frame { background: var(--paper); padding: 8px; border: 1px solid var(--rule); border-radius: 4px; margin-bottom: 1rem; }
-      .photo-frame img { width: 100%; display: block; border-radius: 2px; }
+      /* PHOTO PREVIEW */
+      .photo-frame {
+        background: var(--paper);
+        padding: 8px;
+        border: 3px solid var(--ink);
+        margin-bottom: 1rem;
+      }
+      .photo-frame img { width: 100%; display: block; }
 
-      .shelf { background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 0.85rem 1rem; margin-bottom: 1.75rem; }
-      .shelf-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.28em; color: var(--ink-muted); margin-bottom: 0.5rem; }
+      /* SHELF */
+      .shelf {
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .shelf-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.18em;
+        color: var(--red);
+        margin-bottom: 0.5rem;
+      }
 
+      /* STEP HEADER */
       .step-head { margin-bottom: 1.25rem; }
-      .step-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.28em; color: var(--ink-muted); margin-bottom: 0.4rem; }
-      .step-title { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 72; font-size: 1.8rem; font-weight: 400; font-style: italic; margin: 0; line-height: 1.05; letter-spacing: -0.015em; }
-      .step-sub { font-size: 0.92rem; color: var(--ink-soft); margin: 0.4rem 0 0; }
+      .step-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.22em;
+        color: var(--red);
+        margin-bottom: 0.5rem;
+      }
+      .step-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: clamp(1.7rem, 6.5vw, 2.2rem);
+        font-weight: 900;
+        line-height: 0.92;
+        letter-spacing: -0.025em;
+        margin: 0;
+        text-transform: uppercase;
+      }
+      .step-sub {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--ink-soft);
+        margin: 0.4rem 0 0;
+      }
 
-      .backbar { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-      .back-btn { display: inline-flex; align-items: center; gap: 4px; background: transparent; border: none; color: var(--ink-soft); cursor: pointer; font-family: inherit; font-size: 0.88rem; padding: 0; }
-      .back-btn:hover { color: var(--terracotta); }
-      .crumbs { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; color: var(--ink-muted); }
+      .heading {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: clamp(1.7rem, 6.5vw, 2.2rem);
+        font-weight: 900;
+        line-height: 0.92;
+        letter-spacing: -0.025em;
+        margin: 0 0 0.5rem;
+        text-transform: uppercase;
+      }
+      .lede {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--ink-soft);
+        margin: 0 0 1rem;
+      }
 
+      /* BACKBAR */
+      .backbar {
+        display: flex; align-items: center; gap: 0.85rem;
+        margin-bottom: 1rem; flex-wrap: wrap;
+      }
+      .back-btn {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: var(--ink);
+        color: var(--bg);
+        border: none;
+        cursor: pointer;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.15em;
+        padding: 5px 10px;
+      }
+      .back-btn:hover { background: var(--red); }
+      .crumbs {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem; font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--ink-soft);
+        text-transform: uppercase;
+      }
+
+      /* PILLS */
       .pills { display: flex; flex-wrap: wrap; gap: 5px; }
-      .pill { padding: 0.28rem 0.7rem; border-radius: 999px; font-size: 0.82rem; display: inline-block; animation: chipIn 0.4s both; }
-      .pill-strong { background: rgba(200, 77, 44, 0.12); color: var(--terracotta-deep); border: 1px solid rgba(200, 77, 44, 0.25); }
-      .pill-muted { background: rgba(31,26,20,0.05); color: var(--ink-soft); border: 1px solid var(--rule-soft); }
+      .pill {
+        padding: 0.28rem 0.65rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+        display: inline-block;
+        animation: chipIn 0.4s both;
+      }
+      .pill-strong {
+        background: var(--ink);
+        color: var(--bg);
+      }
+      .pill-muted {
+        background: transparent;
+        color: var(--ink);
+        border: 2px solid var(--ink);
+      }
 
-      .cuisine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.5rem; }
-      .cuisine-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 0.95rem 0.75rem; cursor: pointer; font-family: inherit; text-align: left; color: var(--ink); transition: all 0.2s; animation: cardIn 0.5s both; position: relative; }
-      .cuisine-card:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(31,26,20,0.07); border-color: var(--ink); }
-      .cuisine-emoji { font-size: 1.5rem; margin-bottom: 0.35rem; }
-      .cuisine-name { font-family: 'Fraunces', serif; font-size: 1.02rem; font-weight: 500; font-style: italic; line-height: 1.1; margin-bottom: 0.15rem; }
-      .cuisine-note { font-size: 0.74rem; color: var(--ink-muted); line-height: 1.3; }
+      /* CUISINE GRID */
+      .cuisine-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+      }
+      .cuisine-card {
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        padding: 0.95rem 0.85rem;
+        cursor: pointer;
+        font-family: inherit;
+        text-align: left;
+        color: var(--ink);
+        transition: all 0.15s;
+        animation: cardIn 0.4s both;
+      }
+      .cuisine-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--ink);
+        background: #fff;
+      }
+      .cuisine-emoji { font-size: 1.4rem; margin-bottom: 0.35rem; }
+      .cuisine-name {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 0.98rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 1;
+        margin-bottom: 0.2rem;
+        letter-spacing: -0.01em;
+      }
+      .cuisine-note {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 0.8rem;
+        color: var(--ink-soft);
+        line-height: 1.2;
+      }
 
+      /* SKILL LIST */
       .skill-list { margin-bottom: 1.5rem; }
-      .skill-card { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem; margin-bottom: 0.55rem; background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 4px; cursor: pointer; font-family: inherit; color: var(--ink); text-align: left; transition: all 0.2s; animation: cardIn 0.5s both; }
-      .skill-card:hover { background: #fff; transform: translateX(2px); box-shadow: 0 4px 14px rgba(31,26,20,0.06); }
-      .skill-name { font-family: 'Fraunces', serif; font-size: 1.15rem; font-style: italic; font-weight: 500; margin-bottom: 0.1rem; }
-      .skill-tag { font-size: 0.86rem; color: var(--ink-muted); }
-      .skill-arrow { font-family: 'Fraunces', serif; font-size: 1.3rem; color: var(--accent); opacity: 0.7; transition: transform 0.2s; }
-      .skill-card:hover .skill-arrow { transform: translateX(3px); opacity: 1; }
+      .skill-card {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.95rem 1.1rem;
+        margin-bottom: 0.6rem;
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--ink);
+        text-align: left;
+        transition: all 0.15s;
+        animation: cardIn 0.4s both;
+      }
+      .skill-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--red);
+        background: #fff;
+      }
+      .skill-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 700;
+        background: var(--ink);
+        color: var(--bg);
+        padding: 4px 8px;
+        letter-spacing: 0.05em;
+      }
+      .skill-body { flex: 1; }
+      .skill-name {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.1rem;
+      }
+      .skill-tag {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 0.92rem;
+        color: var(--ink-soft);
+      }
+      .skill-arrow {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.4rem;
+        color: var(--red);
+      }
 
-      .diet-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
-      .diet-chip { display: inline-flex; align-items: center; gap: 5px; padding: 0.5rem 0.9rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 0.9rem; color: var(--ink-soft); animation: chipIn 0.4s both; transition: all 0.2s; }
-      .diet-chip:hover { border-color: var(--ink); color: var(--ink); }
-      .diet-chip.is-active { background: var(--terracotta); border-color: var(--terracotta); color: var(--paper); }
-      .diet-skip { font-size: 0.82rem; color: var(--ink-muted); font-style: italic; text-align: center; margin: 0.6rem 0 0; }
+      /* DIET */
+      .diet-chips {
+        display: flex; flex-wrap: wrap; gap: 7px;
+        margin-bottom: 1.5rem;
+      }
+      .diet-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 0.5rem 0.9rem;
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: var(--ink);
+        animation: chipIn 0.4s both;
+        transition: all 0.12s;
+      }
+      .diet-chip:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 var(--ink);
+      }
+      .diet-chip.is-active {
+        background: var(--red);
+        color: var(--paper);
+        border-color: var(--red);
+      }
+      .diet-chip.is-active:hover { box-shadow: 2px 2px 0 var(--ink); }
 
-      .result-pretitle { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.32em; color: var(--ink-muted); margin-bottom: 0.3rem; }
-      .result-title { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 96; font-size: 2rem; font-weight: 400; font-style: italic; margin: 0 0 1.5rem; letter-spacing: -0.015em; }
-      .dish-list { margin-bottom: 1rem; }
-      .dish-card { width: 100%; background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 4px; padding: 1.1rem 1.2rem; margin-bottom: 0.75rem; text-align: left; cursor: pointer; font-family: inherit; color: var(--ink); transition: all 0.25s; animation: cardIn 0.6s both; }
-      .dish-card:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(31,26,20,0.08); }
-      .dish-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.18em; color: var(--accent); margin-bottom: 0.35rem; }
-      .dish-name { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 72; font-size: 1.3rem; font-style: italic; font-weight: 500; margin: 0 0 0.4rem; color: var(--ink); line-height: 1.15; }
-      .dish-tag { font-size: 0.93rem; color: var(--ink-soft); margin: 0 0 0.55rem; font-style: italic; }
-      .dish-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--ink-muted); text-transform: uppercase; display: flex; gap: 6px; }
-      .dish-meta .dot { opacity: 0.5; }
+      /* CHOOSE - dish cards */
+      .big-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem; font-weight: 700;
+        letter-spacing: 0.28em;
+        color: var(--red);
+        margin-bottom: 0.5rem;
+      }
+      .dish-list { margin-bottom: 1.25rem; }
+      .dish-card {
+        position: relative;
+        width: 100%;
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        padding: 1.1rem 1.25rem 1rem;
+        margin-bottom: 0.85rem;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--ink);
+        transition: all 0.2s;
+        animation: cardIn 0.5s both;
+      }
+      .dish-card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 5px 5px 0 var(--red);
+        background: #fff;
+      }
+      .dish-num-stamp {
+        position: absolute; top: -1px; right: -1px;
+        background: var(--red); color: var(--paper);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem; font-weight: 700;
+        padding: 4px 9px;
+        letter-spacing: 0.05em;
+      }
+      .dish-name {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 0.95;
+        margin: 0 0 0.4rem;
+        letter-spacing: -0.025em;
+        padding-right: 50px;
+      }
+      .dish-tag {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 0.97rem;
+        color: var(--ink-soft);
+        margin: 0 0 0.6rem;
+        line-height: 1.35;
+      }
+      .dish-meta {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--ink);
+        text-transform: uppercase;
+        display: flex; gap: 7px; align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .dish-meta .dot { color: var(--red); font-size: 0.55rem; }
+      .dish-pick {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem; font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--red);
+        text-transform: uppercase;
+        padding-top: 0.4rem;
+        border-top: 2px solid var(--rule-soft);
+      }
 
+      /* RECIPE */
       .recipe { margin-bottom: 1.25rem; }
-      .recipe-frame { background: var(--paper); border: 1px solid var(--rule); border-top: 3px solid var(--accent); border-radius: 4px; padding: 1.5rem 1.3rem 1.3rem; margin-bottom: 1.5rem; text-align: center; }
-      .recipe-pretitle { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.32em; color: var(--ink-muted); margin-bottom: 0.4rem; }
-      .recipe-title { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 144; font-size: clamp(2rem, 7vw, 2.6rem); font-weight: 500; font-style: italic; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 0.5rem; color: var(--accent); }
-      .recipe-tagline { font-size: 1rem; color: var(--ink-soft); font-style: italic; margin: 0 0 1.1rem; }
-      .recipe-meta { display: flex; justify-content: center; align-items: stretch; gap: 1.2rem; padding-top: 0.8rem; border-top: 1px solid var(--rule-soft); }
-      .meta-divider { width: 1px; background: var(--rule-soft); }
-      .meta-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.22em; color: var(--ink-muted); }
-      .meta-value { font-family: 'Fraunces', serif; font-size: 0.95rem; font-style: italic; margin-top: 0.2rem; color: var(--ink); }
+      .recipe-frame {
+        background: var(--ink);
+        color: var(--bg);
+        padding: 1.4rem 1.3rem 1.3rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+      .recipe-pretitle {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.28em;
+        color: var(--red);
+        margin-bottom: 0.4rem;
+      }
+      .recipe-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: clamp(1.8rem, 8vw, 2.4rem);
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+        margin: 0 0 0.5rem;
+        color: var(--bg);
+      }
+      .recipe-tagline {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--paper);
+        margin: 0 0 1.1rem;
+        line-height: 1.4;
+      }
+      .recipe-meta {
+        display: flex;
+        gap: 1.5rem;
+        padding-top: 0.8rem;
+        border-top: 2px solid var(--bg);
+      }
+      .meta { }
+      .meta-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem; font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--bg);
+      }
+      .meta-value {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1rem;
+        margin-top: 0.2rem;
+        text-transform: uppercase;
+        color: var(--paper);
+      }
 
       .sect { margin-bottom: 1.5rem; }
-      .sect-title { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.28em; color: var(--ink-muted); margin: 0 0 0.6rem; font-weight: 500; }
+      .sect-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        color: var(--red);
+        margin: 0 0 0.6rem;
+      }
 
       .steps { list-style: none; padding: 0; margin: 0; }
-      .steps li { display: flex; gap: 1rem; margin-bottom: 0.85rem; line-height: 1.6; }
-      .step-n { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--terracotta); flex-shrink: 0; padding-top: 0.25rem; letter-spacing: 0.05em; }
+      .steps li {
+        display: flex; gap: 1rem;
+        margin-bottom: 1rem;
+        background: var(--paper);
+        border: 2px solid var(--ink);
+        padding: 0.8rem 1rem;
+      }
+      .step-n {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.3rem;
+        color: var(--red);
+        flex-shrink: 0;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .step-body {
+        font-family: 'Newsreader', serif;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--ink);
+      }
 
-      .chef-note { background: var(--paper); border-left: 3px solid var(--accent); padding: 1rem 1.15rem; margin: 1.5rem 0; border-radius: 2px; }
-      .chef-note-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.28em; color: var(--ink-muted); margin-bottom: 0.4rem; }
-      .chef-note p { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.05rem; margin: 0; line-height: 1.5; color: var(--ink); }
+      .chef-note {
+        background: var(--red);
+        color: var(--paper);
+        padding: 1rem 1.15rem;
+        margin: 1.5rem 0;
+      }
+      .chef-note-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.22em;
+        color: var(--bg);
+        margin-bottom: 0.4rem;
+      }
+      .chef-note p {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 1.08rem;
+        margin: 0;
+        line-height: 1.5;
+        color: var(--paper);
+      }
 
-      .btn-primary { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 1rem 1.1rem; background: var(--ink); color: var(--paper); border: none; border-radius: 4px; font-family: 'Fraunces', serif; font-size: 1.02rem; font-style: italic; font-weight: 500; cursor: pointer; margin-bottom: 0.55rem; letter-spacing: 0.005em; transition: all 0.2s; }
-      .btn-primary:hover { background: var(--terracotta); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(200, 77, 44, 0.25); }
-      .btn-primary:active { transform: translateY(0); }
+      /* BUTTONS */
+      .btn-primary {
+        width: 100%;
+        display: block;
+        padding: 1rem 1.1rem;
+        background: var(--ink);
+        color: var(--bg);
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.05rem;
+        text-transform: uppercase;
+        letter-spacing: -0.005em;
+        cursor: pointer;
+        margin-bottom: 0.6rem;
+        transition: all 0.15s;
+      }
+      .btn-primary:hover {
+        background: var(--red);
+        border-color: var(--red);
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+      .btn-primary:active { transform: translate(0, 0); box-shadow: none; }
 
-      .btn-ghost { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0.85rem 1rem; background: transparent; color: var(--ink-soft); border: 1px solid var(--rule); border-radius: 4px; font-family: inherit; font-size: 0.92rem; font-style: italic; cursor: pointer; transition: all 0.2s; }
-      .btn-ghost:hover { border-color: var(--ink); color: var(--ink); background: var(--paper); }
+      .btn-ghost {
+        width: 100%;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 0.85rem 1rem;
+        background: transparent;
+        color: var(--ink);
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.15s;
+        margin-bottom: 0.55rem;
+      }
+      .btn-ghost:hover {
+        background: var(--ink);
+        color: var(--bg);
+      }
 
+      /* LOADING */
       .loading { text-align: center; padding: 4rem 0; }
-      .loading .spin { animation: spin 1.2s linear infinite; color: var(--terracotta); }
-      .loading-label { font-family: 'Fraunces', serif; font-size: 1.3rem; font-style: italic; margin-top: 1rem; color: var(--ink); }
-      .loading-sub { font-size: 0.9rem; color: var(--ink-muted); font-style: italic; margin-top: 0.25rem; }
+      .loading .spin { animation: spin 1.2s linear infinite; color: var(--red); }
+      .loading-label {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.3rem;
+        text-transform: uppercase;
+        letter-spacing: -0.015em;
+        margin-top: 1rem;
+      }
+      .loading-sub {
+        font-family: 'Newsreader', serif;
+        font-style: italic;
+        font-size: 0.95rem;
+        color: var(--ink-soft);
+        margin-top: 0.25rem;
+      }
 
-      .error-banner { background: rgba(200, 77, 44, 0.12); border: 1px solid rgba(200, 77, 44, 0.4); color: var(--terracotta-deep); padding: 0.7rem 0.9rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
-      .error-banner button { background: none; border: none; color: inherit; cursor: pointer; padding: 4px; display: flex; }
+      /* ERROR */
+      .error-banner {
+        background: var(--red);
+        border: 3px solid var(--ink);
+        color: var(--paper);
+        padding: 0.7rem 0.9rem;
+        margin-bottom: 1rem;
+        font-size: 0.92rem;
+        font-weight: 500;
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 0.6rem;
+      }
+      .error-banner button {
+        background: var(--ink); border: none; color: var(--bg); cursor: pointer;
+        padding: 4px; display: flex;
+      }
 
-      .fadein { animation: fadein 0.4s ease both; }
-      @keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      @keyframes cardIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-      @keyframes chipIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      /* ABOUT PANEL */
+      .about-overlay {
+        position: fixed; inset: 0;
+        background: rgba(24, 20, 16, 0.7);
+        z-index: 999;
+        display: flex; align-items: flex-start; justify-content: center;
+        padding: 1rem;
+        animation: fadein 0.2s;
+        overflow-y: auto;
+      }
+      .about-panel {
+        position: relative;
+        max-width: 540px;
+        width: 100%;
+        background: var(--bg);
+        border: 4px solid var(--ink);
+        padding: 2rem 1.5rem 1.5rem;
+        margin: 2rem 0;
+        animation: panelIn 0.3s ease;
+      }
+      .about-close {
+        position: absolute; top: 10px; right: 10px;
+        background: var(--ink); color: var(--bg);
+        border: none; cursor: pointer;
+        width: 36px; height: 36px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .about-close:hover { background: var(--red); }
+      .about-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem; font-weight: 700;
+        letter-spacing: 0.28em;
+        color: var(--red);
+        margin-bottom: 0.5rem;
+      }
+      .about-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: clamp(1.6rem, 6vw, 2rem);
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 0.92;
+        letter-spacing: -0.025em;
+        margin: 0 0 1.5rem;
+        color: var(--ink);
+      }
+      .about-section {
+        display: flex; gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--rule-soft);
+      }
+      .about-section:last-of-type {
+        border-bottom: 3px solid var(--ink);
+      }
+      .about-section-num {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.8rem;
+        color: var(--red);
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .about-section-body h3 {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.05rem;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        margin: 0 0 0.4rem;
+        line-height: 1.1;
+      }
+      .about-section-body p {
+        font-family: 'Newsreader', serif;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--ink-soft);
+        margin: 0;
+      }
+      .about-footer {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--ink-soft);
+        text-align: center;
+        padding-top: 0.5rem;
+      }
+
+      /* ANIMATIONS */
+      .fadein { animation: fadein 0.35s ease both; }
+      @keyframes fadein {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes cardIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes chipIn {
+        from { opacity: 0; transform: scale(0.92); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes panelIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
       @keyframes spin { to { transform: rotate(360deg); } }
     `}</style>
   );
